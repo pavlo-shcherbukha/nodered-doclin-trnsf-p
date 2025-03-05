@@ -1,0 +1,89 @@
+version: '3.8'
+services:
+  rabbitmq:
+    image: rabbitmq:4.0-management
+    container_name: rabbitmqupl
+    ports:
+      - '5672:5672'
+      - '15672:15672'
+    healthcheck:
+      test: ["CMD", "rabbitmqctl", "status"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    environment:
+      RABBITMQ_DEFAULT_USER: 
+      RABBITMQ_DEFAULT_PASS: 
+  couchdb:
+    image: couchdb
+    #restart: always
+    ports:
+      - '5984:5984'
+    environment:
+      - COUCHDB_USER=
+      - COUCHDB_PASSWORD=    
+    volumes:
+      - /home/db
+  upl:
+    # 1===
+    #image: nodered/node-red
+    #container_name: redsender
+    build:
+      context: ./
+      dockerfile: nodered.dockerfile 
+      args:
+        GIT_USER: 
+        GIT_PSW: 
+        GIT_BRANCH: tz-000001
+        GIT_REPO: github.com/pavlo-shcherbukha/nodered-doclin-trnsf.git
+        GIT_EMAIL: "pasha.kx@gmail.com"
+    ports:
+      - "1880:1880"
+    volumes:
+      - /home/nodered
+    links:
+      - "rabbitmq"
+      - "couchdb"
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      couchdb:
+        condition: service_started
+    environment:
+      RABBITMQ_USER: ""
+      RABBITMQ_PASSWORD: ""
+      RABBITMQ_HOST: "rabbitmq"
+      RABBITMQ_PORT: "5672"      
+      COUCHDB_AUTH_TYPE: "COUCHDB_SESSION"
+      COUCHDB_URL: "http://couchdb:5984"
+      COUCHDB_USERNAME: ""
+      COUCHDB_PASSWORD: "" 
+      FLOWS: "uploader.json"     
+  docler:
+    build:
+      context: ./
+      dockerfile: doclin-worker.dockerfile 
+    links:
+      - "rabbitmq"
+      - "couchdb"
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      couchdb:
+        condition: service_started
+    environment:
+      LOGLEVEL: "DEBUG"
+      APP_FILE: "doclin_weber.py"
+      RABBITMQ_USER: ""
+      RABBITMQ_PASSWORD: ""
+      RABBITMQ_HOST: "rabbitmq"
+      RABBITMQ_PORT: "5672" 
+      COUCHDB_AUTH_TYPE: "COUCHDB_SESSION"
+      COUCHDB_URL: "http://couchdb:5984"
+      COUCHDB_USERNAME: "devadm"
+      COUCHDB_PASSWORD: "qq"
+      OMP_NUM_THREADS: 2 
+
+
+   

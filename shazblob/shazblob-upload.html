@@ -1,0 +1,42 @@
+<script type="text/javascript">
+    RED.nodes.registerType('shazbstorage-upload',{
+        category: 'shAzureBlobStorage',
+        color: '#D8BFD8',
+        defaults: {
+            name: { value: ''  },
+            configname: { type: 'shazbstorage-config', required: true},
+            containerName: {  value: '', required: false },
+            blobName: { value: '' , required: false },
+        },
+        inputs: 1,
+        outputs: 1,
+        label: function() {
+            if (this.name) return this.name;
+            return 'shazbstorage-upload';
+        },
+
+        icon: 'file.png',
+    });
+</script>
+
+<script type="text/html" data-template-name="shazbstorage-upload">
+
+    <div class="form-row">
+        <label for="node-input-name"><i class="fa fa-tag"></i> Name </label>
+        <input type="text" id="node-input-name" placeholder="Name">
+    </div>
+
+    <div class="form-row">
+        <label for="node-input-configname"><i class="fa fa-wrench"></i> Config</label>
+        <input id="node-input-configname">
+    </div>
+    <div class="form-row">
+        <label for="node-input-containerName"><i class="fa fa-tag"></i> Container name </label>
+        <input type="text" id="node-input-containerName" placeholder="Container name">
+    </div>
+    <div class="form-row">
+        <label for="node-input-blobName"><i class="fa fa-tag"></i> Blob name </label>
+        <input type="text" id="node-input-blobName" placeholder="Blob name">
+    </div>
+</script>
+

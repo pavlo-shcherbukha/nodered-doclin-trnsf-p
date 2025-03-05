@@ -1,0 +1,1592 @@
+[
+    {
+        "id": "931fc66e047477c0",
+        "type": "tab",
+        "label": "FileUploader",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "1b390ecb82aef0e3",
+        "type": "tab",
+        "label": "ProcessReplays",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "2accda386ca7c56f",
+        "type": "tab",
+        "label": "ImageSender",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "2a179bf5f0025264",
+        "type": "tab",
+        "label": "WriteToCloudBlobStirage",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "bfb1e7e97eef5e04",
+        "type": "amqp-broker",
+        "name": "AMQP Config",
+        "host": "rabbitmq",
+        "port": "5672",
+        "vhost": "",
+        "tls": false,
+        "credsFromSettings": false
+    },
+    {
+        "id": "83e9bf71fbe099c8",
+        "type": "amqp-broker",
+        "name": "",
+        "host": "rabbitmq",
+        "port": "5672",
+        "vhost": "",
+        "tls": false,
+        "credsFromSettings": false
+    },
+    {
+        "id": "7a7f803fe40b5d6a",
+        "type": "cloudantplus",
+        "host": "http://couchdb:5984",
+        "name": "insert docu,emt",
+        "useapikey": false
+    },
+    {
+        "id": "2153944ff15a84ed",
+        "type": "shazbstorage-config",
+        "configname": "az-blob",
+        "azure_tenant_id": "",
+        "azure_client_id": "",
+        "azure_client_secret": "",
+        "azure_storage_account_name": "noderedtest"
+    },
+    {
+        "id": "6a174355f1671148",
+        "type": "shibmcos-config",
+        "configname": "ibmBlobStorage",
+        "endpoint": "",
+        "apikeyid": "",
+        "serviceInstanceId": "",
+        "signatureVersion": "iam"
+    },
+    {
+        "id": "7c30fb48.99cd2c",
+        "type": "http in",
+        "z": "931fc66e047477c0",
+        "name": "",
+        "url": "/simple",
+        "method": "get",
+        "upload": false,
+        "swaggerDoc": "",
+        "x": 230,
+        "y": 260,
+        "wires": [
+            [
+                "3153fbd3.203a64"
+            ]
+        ]
+    },
+    {
+        "id": "3153fbd3.203a64",
+        "type": "template",
+        "z": "931fc66e047477c0",
+        "name": "html",
+        "field": "payload",
+        "fieldType": "msg",
+        "format": "handlebars",
+        "syntax": "mustache",
+        "template": "<h1>Upload a file here:</h1>\n\n<form action=\"/upload\" method=\"POST\" enctype=\"multipart/form-data\">\n    <input type=\"file\" name=\"myFile\" />\n    <input type=\"submit\" value=\"Submit\">\n</form>",
+        "output": "str",
+        "x": 450,
+        "y": 260,
+        "wires": [
+            [
+                "737e44d2.373a64"
+            ]
+        ]
+    },
+    {
+        "id": "737e44d2.373a64",
+        "type": "http response",
+        "z": "931fc66e047477c0",
+        "name": "",
+        "x": 630,
+        "y": 260,
+        "wires": []
+    },
+    {
+        "id": "46e01eea.4a46a",
+        "type": "comment",
+        "z": "931fc66e047477c0",
+        "name": "Simple",
+        "info": "",
+        "x": 210,
+        "y": 220,
+        "wires": []
+    },
+    {
+        "id": "25859a94.7d9976",
+        "type": "http in",
+        "z": "931fc66e047477c0",
+        "name": "",
+        "url": "/upload",
+        "method": "post",
+        "upload": true,
+        "swaggerDoc": "",
+        "x": 230,
+        "y": 420,
+        "wires": [
+            [
+                "b3c89de6c6d068db"
+            ]
+        ]
+    },
+    {
+        "id": "da960ababab4ac73",
+        "type": "comment",
+        "z": "931fc66e047477c0",
+        "name": "File Uploader",
+        "info": "# Description\nFile Uploader simple Example",
+        "x": 510,
+        "y": 120,
+        "wires": []
+    },
+    {
+        "id": "1ac7584fb5b4c742",
+        "type": "cloudantplus out",
+        "z": "931fc66e047477c0",
+        "name": "StoreDocument",
+        "cloudant": "7a7f803fe40b5d6a",
+        "database": "ufiles",
+        "service": "_ext_",
+        "payonly": true,
+        "operation": "insert",
+        "x": 700,
+        "y": 420,
+        "wires": [
+            [
+                "d030347e0ae0e77a",
+                "860fb843f506a4b0",
+                "2f714d7e8ca976f9"
+            ]
+        ]
+    },
+    {
+        "id": "b3c89de6c6d068db",
+        "type": "function",
+        "z": "931fc66e047477c0",
+        "name": "prepareDBReq",
+        "func": "\nlet msgo={}\n\nlet attach = {\n            \"content_type\": msg.req.files[0].mimetype,\n            \"data\": msg.req.files[0].buffer.toString('base64')\n} \n\nlet attachitem={}\nattachitem[ msg.req.files[0].originalname ]=attach\n\nmsgo.payload = {   \n    \"name\": msg.req.files[0].originalname,\n    \"content_type\": msg.req.files[0].mimetype,\n    \"proc_status\": \"new\",\n    \"_attachments\": attachitem\n} \nmsgo.req=msg.req\nmsgo.res=msg.res\n//flow.set(\"filename\", msg.req.files[0].originalname);\nreturn msgo;\n\n\n\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 460,
+        "y": 420,
+        "wires": [
+            [
+                "1ac7584fb5b4c742"
+            ]
+        ]
+    },
+    {
+        "id": "d030347e0ae0e77a",
+        "type": "debug",
+        "z": "931fc66e047477c0",
+        "name": "debug 1",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 680,
+        "y": 360,
+        "wires": []
+    },
+    {
+        "id": "860fb843f506a4b0",
+        "type": "template",
+        "z": "931fc66e047477c0",
+        "name": "html",
+        "field": "payload",
+        "fieldType": "msg",
+        "format": "handlebars",
+        "syntax": "mustache",
+        "template": "<p></p>File uploaded !</p>\n\n<h2>Upload Status:</h2>\n\n<pre>\n{{{payload.status}}} - {{{payload.statusText}}}\nDocument ID {{{payload.result.id}}}\n\n</pre>",
+        "output": "str",
+        "x": 910,
+        "y": 340,
+        "wires": [
+            [
+                "15252ab7f35b0f1a"
+            ]
+        ]
+    },
+    {
+        "id": "15252ab7f35b0f1a",
+        "type": "http response",
+        "z": "931fc66e047477c0",
+        "name": "",
+        "x": 1070,
+        "y": 340,
+        "wires": []
+    },
+    {
+        "id": "461c779524aa8850",
+        "type": "debug",
+        "z": "931fc66e047477c0",
+        "name": "debug 3",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 960,
+        "y": 440,
+        "wires": []
+    },
+    {
+        "id": "1eec380636a0c8ef",
+        "type": "amqp-out",
+        "z": "931fc66e047477c0",
+        "name": "",
+        "broker": "bfb1e7e97eef5e04",
+        "reconnectOnError": false,
+        "exchangeName": "doclin_trnsf",
+        "exchangeType": "direct",
+        "exchangeRoutingKey": "uploader",
+        "exchangeRoutingKeyType": "str",
+        "exchangeDurable": true,
+        "amqpProperties": "{ \"headers\": {} }",
+        "rpcTimeoutMilliseconds": 3000,
+        "outputs": 0,
+        "x": 1200,
+        "y": 500,
+        "wires": []
+    },
+    {
+        "id": "2f714d7e8ca976f9",
+        "type": "function",
+        "z": "931fc66e047477c0",
+        "name": "PrepareQueueMsg",
+        "func": "let msgq ={}\nmsgq.payload = {\n    \"document_id\": msg.payload.result.id,\n    \"document_rev\": msg.payload.result.rev\n\n}\nreturn msgq;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 950,
+        "y": 500,
+        "wires": [
+            [
+                "461c779524aa8850",
+                "1eec380636a0c8ef"
+            ]
+        ]
+    },
+    {
+        "id": "23d1a3251cf5df2f",
+        "type": "http in",
+        "z": "931fc66e047477c0",
+        "name": "[get] /conv/:id result",
+        "url": "/conv/:id",
+        "method": "get",
+        "upload": false,
+        "swaggerDoc": "",
+        "x": 250,
+        "y": 660,
+        "wires": [
+            [
+                "814d94b53b35f8e7",
+                "0dfe52289d9d36be"
+            ]
+        ]
+    },
+    {
+        "id": "4d4a46c8ab4d6d1d",
+        "type": "template",
+        "z": "931fc66e047477c0",
+        "name": "html",
+        "field": "payload",
+        "fieldType": "msg",
+        "format": "handlebars",
+        "syntax": "mustache",
+        "template": "<h2>File conversation report</h2>\n\n<table border=\"1\" style=\"width:60%\">\n    <tr>\n        <th border=\"5\">Document ID</th>\n        <th border=\"5\">FileName - original</th>\n        <th border=\"5\">Conversation status</th>\n        <th border=\"5\">Markdown file name</th>\n        <th border=\"5\">Images on Azure Blob Storage</th>\n        <th border=\"5\">Images on IBM Cloud Storage</th>\n  \n    </tr>\n    <tr>\n        <td border=\"5\">{{{payload._id}}} </td>\n        <td border=\"5\">{{{payload.name}}}</td>\n        <td border=\"5\">{{{payload.proc_status}}}</td>\n        <td border=\"5\">{{{payload.converter.mdname}}}</td>\n        <td border=\"5\">{{{payload.az_upload.length}}}</td>\n        <td border=\"5\">{{{payload.ibm_upload.length}}}</td>\n    </tr>\n\n</table>\n\n<h3>Images uploaded at AZURE Blob Storage</h3> \n<table border=\"1\" style=\"width:60%\">\n    <tr>\n        <th border=\"5\">FileName</th>\n        <th border=\"5\">Blob FileName</th>\n        <th border=\"5\">Container Name</th>\n        <th border=\"5\">id image document</th>\n    </tr>\n    {{#payload.az_upload}}\n        <tr>\n            <td border=\"5\">{{file_name}}</td>\n            <td border=\"5\">{{blobName}}</td>\n            <td border=\"5\">{{containerName}}</td>\n            <td border=\"5\">{{file_id}}</td>\n        </tr>    \n    {{/payload.az_upload}}\n</table>\n\n\n<h3>Images uploaded at IBM Cloud Storage</h3> \n<table border=\"1\" style=\"width:60%\">\n    <tr>\n        <th border=\"5\">FileName</th>\n        <th border=\"5\">Blob FileName</th>\n        <th border=\"5\">Backet Name</th>\n        <th border=\"5\">id image document</th>\n    </tr>\n    {{#payload.ibm_upload}}\n        <tr>\n            <td border=\"5\">{{file_name}}</td>\n            <td border=\"5\">{{blobName}}</td>\n            <td border=\"5\">{{containerName}}</td>\n            <td border=\"5\">{{file_id}}</td>\n        </tr>    \n    {{/payload.ibm_upload}}\n</table>\n",
+        "output": "str",
+        "x": 930,
+        "y": 660,
+        "wires": [
+            [
+                "de8e1ae56398af8c"
+            ]
+        ]
+    },
+    {
+        "id": "de8e1ae56398af8c",
+        "type": "http response",
+        "z": "931fc66e047477c0",
+        "name": "",
+        "x": 1110,
+        "y": 660,
+        "wires": []
+    },
+    {
+        "id": "814d94b53b35f8e7",
+        "type": "debug",
+        "z": "931fc66e047477c0",
+        "name": "debug 2",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 420,
+        "y": 780,
+        "wires": []
+    },
+    {
+        "id": "0dfe52289d9d36be",
+        "type": "function",
+        "z": "931fc66e047477c0",
+        "name": "PrepareReadDoc",
+        "func": "msg.payload={}\nmsg.payload._id = msg.req.params.id;\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 490,
+        "y": 660,
+        "wires": [
+            [
+                "a8e3a8e389b1b995"
+            ]
+        ]
+    },
+    {
+        "id": "a8e3a8e389b1b995",
+        "type": "cloudantplus in",
+        "z": "931fc66e047477c0",
+        "name": "ReadOneDoc",
+        "cloudant": "7a7f803fe40b5d6a",
+        "database": "ufiles",
+        "service": "_ext_",
+        "search": "_id_",
+        "design": "",
+        "index": "",
+        "x": 740,
+        "y": 660,
+        "wires": [
+            [
+                "4d4a46c8ab4d6d1d",
+                "1ffef33aca6359cb"
+            ]
+        ]
+    },
+    {
+        "id": "1ffef33aca6359cb",
+        "type": "debug",
+        "z": "931fc66e047477c0",
+        "name": "debug 5",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 920,
+        "y": 740,
+        "wires": []
+    },
+    {
+        "id": "371d8c9d2ce2f976",
+        "type": "debug",
+        "z": "1b390ecb82aef0e3",
+        "name": "FileWrtDBG",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 430,
+        "y": 140,
+        "wires": []
+    },
+    {
+        "id": "3a06f61d4970e407",
+        "type": "amqp-in",
+        "z": "1b390ecb82aef0e3",
+        "name": "",
+        "broker": "bfb1e7e97eef5e04",
+        "prefetch": 0,
+        "reconnectOnError": false,
+        "noAck": true,
+        "exchangeName": "doclin_repl",
+        "exchangeType": "direct",
+        "exchangeRoutingKey": "converter,azblobstorage,ibmblobstorage",
+        "exchangeDurable": true,
+        "queueName": "worker_replay",
+        "queueType": "classic",
+        "queueExclusive": false,
+        "queueDurable": true,
+        "queueAutoDelete": false,
+        "headers": "{}",
+        "x": 240,
+        "y": 40,
+        "wires": [
+            [
+                "b98abab1ca5e5cce"
+            ]
+        ]
+    },
+    {
+        "id": "e458d64a5a6d64d7",
+        "type": "switch",
+        "z": "1b390ecb82aef0e3",
+        "name": "MarcDownCreated",
+        "property": "fields.routingKey",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "eq",
+                "v": "converter",
+                "vt": "str"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 1,
+        "x": 430,
+        "y": 180,
+        "wires": [
+            [
+                "371d8c9d2ce2f976",
+                "221b5c2866f5e69c"
+            ]
+        ]
+    },
+    {
+        "id": "e4f4856f6281d150",
+        "type": "switch",
+        "z": "1b390ecb82aef0e3",
+        "name": "OnBlobStorageAZURE",
+        "property": "fields.routingKey",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "eq",
+                "v": "azblobstorage",
+                "vt": "str"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 1,
+        "x": 440,
+        "y": 340,
+        "wires": [
+            [
+                "12b22ea61d16e326",
+                "8daede0a32aa7456"
+            ]
+        ]
+    },
+    {
+        "id": "12b22ea61d16e326",
+        "type": "debug",
+        "z": "1b390ecb82aef0e3",
+        "name": "BlobStorageAzDBG",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 440,
+        "y": 300,
+        "wires": []
+    },
+    {
+        "id": "e5a704a8faff849b",
+        "type": "cloudantplus in",
+        "z": "1b390ecb82aef0e3",
+        "name": "readMetaInfo",
+        "cloudant": "7a7f803fe40b5d6a",
+        "database": "ufiles",
+        "service": "_ext_",
+        "search": "_id_",
+        "design": "",
+        "index": "",
+        "x": 890,
+        "y": 80,
+        "wires": [
+            [
+                "14948828a8418549",
+                "466689e001bc5f0e"
+            ]
+        ]
+    },
+    {
+        "id": "221b5c2866f5e69c",
+        "type": "function",
+        "z": "1b390ecb82aef0e3",
+        "name": "PrepareDocumentRetrive",
+        "func": "let msgo={}\nflow.set(\"converter_rpl\", msg.payload);\nmsgo.payload = {  \"_id\": msg.payload.document_id} \n\n//flow.set(\"filename\", msg.req.files[0].originalname);\nreturn msgo;\n\n\n\n\n\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 690,
+        "y": 80,
+        "wires": [
+            [
+                "e5a704a8faff849b"
+            ]
+        ]
+    },
+    {
+        "id": "64f6deee4e8f44a8",
+        "type": "debug",
+        "z": "1b390ecb82aef0e3",
+        "name": "DBDOC",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1380,
+        "y": 40,
+        "wires": []
+    },
+    {
+        "id": "14948828a8418549",
+        "type": "function",
+        "z": "1b390ecb82aef0e3",
+        "name": "PrepareDocumentUpdate",
+        "func": "let converter = flow.get(\"converter_rpl\");\n//msg.payload.proc_status = msg.payload.converter.status\nmsg.payload.proc_status = converter.status;\nmsg.payload.converter={}\nmsg.payload.converter.mdname=converter.mdname\nmsg.payload.converter.dbname=converter.dbname\nmsg.payload.az_upload=[];\nmsg.payload.ibm_upload=[];\n//delete msg.payload._rev;\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1130,
+        "y": 80,
+        "wires": [
+            [
+                "e72c6f0e994387d1",
+                "7a542eb1018e9791"
+            ]
+        ]
+    },
+    {
+        "id": "e72c6f0e994387d1",
+        "type": "cloudantplus out",
+        "z": "1b390ecb82aef0e3",
+        "name": "StoreConvererStatus",
+        "cloudant": "7a7f803fe40b5d6a",
+        "database": "ufiles",
+        "service": "_ext_",
+        "payonly": true,
+        "operation": "insert",
+        "x": 1420,
+        "y": 80,
+        "wires": [
+            [
+                "64f6deee4e8f44a8",
+                "3ce24579ec14410b"
+            ]
+        ]
+    },
+    {
+        "id": "7a542eb1018e9791",
+        "type": "debug",
+        "z": "1b390ecb82aef0e3",
+        "name": "UpdateMessage",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1120,
+        "y": 40,
+        "wires": []
+    },
+    {
+        "id": "466689e001bc5f0e",
+        "type": "debug",
+        "z": "1b390ecb82aef0e3",
+        "name": "RetrivedMSG",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 900,
+        "y": 40,
+        "wires": []
+    },
+    {
+        "id": "cd9b97e788503fa9",
+        "type": "amqp-out",
+        "z": "1b390ecb82aef0e3",
+        "name": "",
+        "broker": "bfb1e7e97eef5e04",
+        "reconnectOnError": true,
+        "exchangeName": "doclin_trnsf",
+        "exchangeType": "direct",
+        "exchangeRoutingKey": "images",
+        "exchangeRoutingKeyType": "str",
+        "exchangeDurable": true,
+        "amqpProperties": "{ \"headers\": {} }",
+        "rpcTimeoutMilliseconds": 3000,
+        "outputs": 0,
+        "x": 1520,
+        "y": 140,
+        "wires": []
+    },
+    {
+        "id": "3ce24579ec14410b",
+        "type": "function",
+        "z": "1b390ecb82aef0e3",
+        "name": "PrepareMessage",
+        "func": "let msgq={}\nmsgq.payload={\"document_id\": msg.payload.result.id}\n\nreturn msgq;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1230,
+        "y": 140,
+        "wires": [
+            [
+                "cd9b97e788503fa9",
+                "9b394d39975c8790"
+            ]
+        ]
+    },
+    {
+        "id": "9b394d39975c8790",
+        "type": "debug",
+        "z": "1b390ecb82aef0e3",
+        "name": "PUBLISHMSG",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1240,
+        "y": 180,
+        "wires": []
+    },
+    {
+        "id": "4f53700aaaf06eac",
+        "type": "debug",
+        "z": "1b390ecb82aef0e3",
+        "name": "ReplayMSG",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 170,
+        "y": 220,
+        "wires": []
+    },
+    {
+        "id": "2c2d4b577074e18b",
+        "type": "function",
+        "z": "1b390ecb82aef0e3",
+        "name": "PrepareDocument-AZ-Update",
+        "func": "let converter = flow.get(\"converter_rpl\");\n//msg.payload.proc_status = msg.payload.converter.status\nmsg.payload.proc_status = converter.status;\nlet fileItem={}\nfileItem.file_name=msg.properties.headers.file_name;\nfileItem.file_id=msg.properties.headers.file_id;\nfileItem.blobName=msg.properties.headers.blobName;\nfileItem.containerName=msg.properties.headers.containerName;\n\nmsg.payload.az_upload.push(fileItem)\n//delete msg.payload._rev;\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1250,
+        "y": 340,
+        "wires": [
+            [
+                "18903d957c8d62dd",
+                "593a74cc07471413"
+            ]
+        ]
+    },
+    {
+        "id": "8daede0a32aa7456",
+        "type": "function",
+        "z": "1b390ecb82aef0e3",
+        "name": "PrepareDocumentRetrive-AZ",
+        "func": "let msgo={};\nlet headers={};\nmsgo.properties=msg.properties;\nmsgo.properties.headers.blobName=msg.payload.blobName;\nmsgo.properties.headers.containerName=msg.payload.containerName;\nheaders=msg.properties.headers;\nmsgo.payload = {  \"_id\": headers.file_correlation_id} \nreturn msgo;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 740,
+        "y": 340,
+        "wires": [
+            [
+                "4c616714b2b30b22"
+            ]
+        ]
+    },
+    {
+        "id": "4c616714b2b30b22",
+        "type": "cloudantplus in",
+        "z": "1b390ecb82aef0e3",
+        "name": "readMetaInfo-AZ",
+        "cloudant": "7a7f803fe40b5d6a",
+        "database": "ufiles",
+        "service": "_ext_",
+        "search": "_id_",
+        "design": "",
+        "index": "",
+        "x": 990,
+        "y": 340,
+        "wires": [
+            [
+                "2c2d4b577074e18b"
+            ]
+        ]
+    },
+    {
+        "id": "18903d957c8d62dd",
+        "type": "cloudantplus out",
+        "z": "1b390ecb82aef0e3",
+        "name": "StoreAZUploadStatus",
+        "cloudant": "7a7f803fe40b5d6a",
+        "database": "ufiles",
+        "service": "_ext_",
+        "payonly": true,
+        "operation": "insert",
+        "x": 1540,
+        "y": 340,
+        "wires": [
+            [
+                "2e4753b357e081c3"
+            ]
+        ]
+    },
+    {
+        "id": "2e4753b357e081c3",
+        "type": "debug",
+        "z": "1b390ecb82aef0e3",
+        "name": "AZ-UPLOAD-STORE",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1560,
+        "y": 300,
+        "wires": []
+    },
+    {
+        "id": "593a74cc07471413",
+        "type": "debug",
+        "z": "1b390ecb82aef0e3",
+        "name": "BEFORE-CONFLICT",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1240,
+        "y": 300,
+        "wires": []
+    },
+    {
+        "id": "b98abab1ca5e5cce",
+        "type": "delay",
+        "z": "1b390ecb82aef0e3",
+        "name": "TimeWait",
+        "pauseType": "rate",
+        "timeout": "30",
+        "timeoutUnits": "seconds",
+        "rate": "1",
+        "nbRateUnits": "4",
+        "rateUnits": "second",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": false,
+        "allowrate": false,
+        "outputs": 1,
+        "x": 180,
+        "y": 180,
+        "wires": [
+            [
+                "4f53700aaaf06eac",
+                "e458d64a5a6d64d7",
+                "e4f4856f6281d150",
+                "27d699a560459f7c"
+            ]
+        ]
+    },
+    {
+        "id": "27d699a560459f7c",
+        "type": "switch",
+        "z": "1b390ecb82aef0e3",
+        "name": "OnBlobStorageIBM",
+        "property": "fields.routingKey",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "eq",
+                "v": "ibmblobstorage",
+                "vt": "str"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 1,
+        "x": 430,
+        "y": 540,
+        "wires": [
+            [
+                "fccf3b5c959def45",
+                "7c7a22a502d2634f"
+            ]
+        ]
+    },
+    {
+        "id": "fccf3b5c959def45",
+        "type": "function",
+        "z": "1b390ecb82aef0e3",
+        "name": "PrepareDocumentRetrive-IBM",
+        "func": "let msgo={};\nlet headers={};\nmsgo.properties=msg.properties;\nmsgo.properties.headers.blobName=msg.payload.blobName;\nmsgo.properties.headers.containerName=msg.payload.containerName;\nheaders=msg.properties.headers;\nmsgo.payload = {  \"_id\": headers.file_correlation_id} \nreturn msgo;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 710,
+        "y": 540,
+        "wires": [
+            [
+                "cd0d07ac82cc7416"
+            ]
+        ]
+    },
+    {
+        "id": "cd0d07ac82cc7416",
+        "type": "cloudantplus in",
+        "z": "1b390ecb82aef0e3",
+        "name": "readMetaInfo-IBM",
+        "cloudant": "7a7f803fe40b5d6a",
+        "database": "ufiles",
+        "service": "_ext_",
+        "search": "_id_",
+        "design": "",
+        "index": "",
+        "x": 1010,
+        "y": 540,
+        "wires": [
+            [
+                "c8c8d7209106722f"
+            ]
+        ]
+    },
+    {
+        "id": "c8c8d7209106722f",
+        "type": "function",
+        "z": "1b390ecb82aef0e3",
+        "name": "PrepareDocument-IBM-Update",
+        "func": "let converter = flow.get(\"converter_rpl\");\n//msg.payload.proc_status = msg.payload.converter.status\nmsg.payload.proc_status = converter.status;\nlet fileItem={}\nfileItem.file_name=msg.properties.headers.file_name;\nfileItem.file_id=msg.properties.headers.file_id;\nfileItem.blobName=msg.properties.headers.blobName;\nfileItem.containerName=msg.properties.headers.containerName;\n\nmsg.payload.ibm_upload.push(fileItem)\n//delete msg.payload._rev;\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1250,
+        "y": 540,
+        "wires": [
+            [
+                "25b1e2b27c467784",
+                "75cfc9d5198a64fd"
+            ]
+        ]
+    },
+    {
+        "id": "25b1e2b27c467784",
+        "type": "cloudantplus out",
+        "z": "1b390ecb82aef0e3",
+        "name": "StoreIBMUploadStatus",
+        "cloudant": "7a7f803fe40b5d6a",
+        "database": "ufiles",
+        "service": "_ext_",
+        "payonly": true,
+        "operation": "insert",
+        "x": 1520,
+        "y": 540,
+        "wires": [
+            [
+                "41e284806cda0715"
+            ]
+        ]
+    },
+    {
+        "id": "7c7a22a502d2634f",
+        "type": "debug",
+        "z": "1b390ecb82aef0e3",
+        "name": "BlobStorageIbmDBG",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 480,
+        "y": 480,
+        "wires": []
+    },
+    {
+        "id": "41e284806cda0715",
+        "type": "debug",
+        "z": "1b390ecb82aef0e3",
+        "name": "IBM-UPLOAD-STORE",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1520,
+        "y": 480,
+        "wires": []
+    },
+    {
+        "id": "75cfc9d5198a64fd",
+        "type": "debug",
+        "z": "1b390ecb82aef0e3",
+        "name": "BEFORE-IBM-STORE",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1240,
+        "y": 480,
+        "wires": []
+    },
+    {
+        "id": "c927de6d89a25ce5",
+        "type": "amqp-in",
+        "z": "2accda386ca7c56f",
+        "name": "",
+        "broker": "bfb1e7e97eef5e04",
+        "prefetch": 0,
+        "reconnectOnError": false,
+        "noAck": true,
+        "exchangeName": "doclin_trnsf",
+        "exchangeType": "direct",
+        "exchangeRoutingKey": "images",
+        "exchangeDurable": true,
+        "queueName": "worker_image",
+        "queueType": "classic",
+        "queueExclusive": false,
+        "queueDurable": true,
+        "queueAutoDelete": false,
+        "headers": "{}",
+        "x": 120,
+        "y": 180,
+        "wires": [
+            [
+                "ea6fb60736ac0591"
+            ]
+        ]
+    },
+    {
+        "id": "20276e64b346a569",
+        "type": "cloudantplus in",
+        "z": "2accda386ca7c56f",
+        "name": "RetriveImages",
+        "cloudant": "7a7f803fe40b5d6a",
+        "database": "dbimage",
+        "service": "_ext_",
+        "search": "_query_",
+        "design": "",
+        "index": "",
+        "x": 600,
+        "y": 180,
+        "wires": [
+            [
+                "dccb6b7adea8db2e",
+                "40a879c4fa045a85"
+            ]
+        ]
+    },
+    {
+        "id": "ea6fb60736ac0591",
+        "type": "function",
+        "z": "2accda386ca7c56f",
+        "name": "PrepareRetriveQuery",
+        "func": "let msgo={};\nlet document_id=msg.payload.document_id;\nmsgo.payload = {\n    \"selector\": {\n        \"correlation_id\": {\n            \"$eq\": document_id\n        }\n    },\n    \"fields\": [\n        \"_id\",\n        \"filename\",\n        \"description\",\n        \"correlation_id\",\n        \"contenttype\"\n    ]\n};\n\nreturn msgo;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 360,
+        "y": 180,
+        "wires": [
+            [
+                "20276e64b346a569"
+            ]
+        ]
+    },
+    {
+        "id": "dccb6b7adea8db2e",
+        "type": "debug",
+        "z": "2accda386ca7c56f",
+        "name": "ImagesForP",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 770,
+        "y": 140,
+        "wires": []
+    },
+    {
+        "id": "40a879c4fa045a85",
+        "type": "split",
+        "z": "2accda386ca7c56f",
+        "name": "SplitArrayOfDocuments",
+        "splt": "",
+        "spltType": "str",
+        "arraySplt": 1,
+        "arraySpltType": "len",
+        "stream": false,
+        "addname": "",
+        "property": "payload.docs",
+        "x": 170,
+        "y": 400,
+        "wires": [
+            [
+                "4067039c64793472",
+                "eaada866e453c572"
+            ]
+        ]
+    },
+    {
+        "id": "4067039c64793472",
+        "type": "debug",
+        "z": "2accda386ca7c56f",
+        "name": "AfterSplitting",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 250,
+        "y": 360,
+        "wires": []
+    },
+    {
+        "id": "f2205205cf115e4f",
+        "type": "function",
+        "z": "2accda386ca7c56f",
+        "name": "processAttachment",
+        "func": "let msgo ={};\nmsgo.payload = msg.payload.toString(\"base64\");\nmsgo.properties = {};\n//let file_name=flow.get(\"img_filename\");\nlet file_name=msg.img_filename;\nlet file_id=msg.img_id;\nlet file_correlation_id=msg.img_correlation_id;\nmsgo.properties.headers={};\nmsgo.properties.headers.file_name=file_name;\nmsgo.properties.headers.file_id=file_id;\nmsgo.properties.headers.file_correlation_id=file_correlation_id;\nreturn msgo;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 910,
+        "y": 400,
+        "wires": [
+            [
+                "0d447d1d8fd22473",
+                "517fbc5428623b12"
+            ]
+        ]
+    },
+    {
+        "id": "0d447d1d8fd22473",
+        "type": "debug",
+        "z": "2accda386ca7c56f",
+        "name": "ReadAttach",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 890,
+        "y": 340,
+        "wires": []
+    },
+    {
+        "id": "eaada866e453c572",
+        "type": "function",
+        "z": "2accda386ca7c56f",
+        "name": "readDocumentByID",
+        "func": "let msgo ={}\nmsgo.payload={}\nmsgo.payload._id = msg.payload.docs._id\nmsgo.payload.filename=msg.payload.docs.filename\nmsgo.payload.correlation_id = msg.payload.docs.correlation_id\nmsgo.payload.url=\"http://couchdb:5984/dbimage/\" + msgo.payload._id + \"/\"+msgo.payload.filename\n\nmsgo.url=\"http://couchdb:5984/dbimage/\" + msgo.payload._id + \"/\" + msgo.payload.filename\n\nmsgo.img_filename=msgo.payload.filename\nmsgo.img_id=msgo.payload._id\nmsgo.img_correlation_id= msgo.payload.correlation_id\nreturn msgo;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 430,
+        "y": 400,
+        "wires": [
+            [
+                "569e5bda1a0055dd",
+                "119f94100dde4cf9"
+            ]
+        ]
+    },
+    {
+        "id": "119f94100dde4cf9",
+        "type": "http request",
+        "z": "2accda386ca7c56f",
+        "name": "ReadImageAttachment",
+        "method": "GET",
+        "ret": "bin",
+        "paytoqs": "ignore",
+        "url": "",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "basic",
+        "senderr": false,
+        "headers": [
+            {
+                "keyType": "other",
+                "keyValue": "Content-Type",
+                "valueType": "other",
+                "valueValue": "application/json"
+            }
+        ],
+        "x": 680,
+        "y": 400,
+        "wires": [
+            [
+                "f2205205cf115e4f"
+            ]
+        ]
+    },
+    {
+        "id": "569e5bda1a0055dd",
+        "type": "debug",
+        "z": "2accda386ca7c56f",
+        "name": "debug 4",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 460,
+        "y": 340,
+        "wires": []
+    },
+    {
+        "id": "517fbc5428623b12",
+        "type": "amqp-out",
+        "z": "2accda386ca7c56f",
+        "name": "",
+        "broker": "bfb1e7e97eef5e04",
+        "reconnectOnError": true,
+        "exchangeName": "doclin_cloud",
+        "exchangeType": "fanout",
+        "exchangeRoutingKey": "",
+        "exchangeRoutingKeyType": "str",
+        "exchangeDurable": true,
+        "amqpProperties": "{}",
+        "rpcTimeoutMilliseconds": 3000,
+        "outputs": 0,
+        "x": 1130,
+        "y": 400,
+        "wires": []
+    },
+    {
+        "id": "a96a261174e3c780",
+        "type": "amqp-in",
+        "z": "2a179bf5f0025264",
+        "name": "IBM-CLOUD",
+        "broker": "bfb1e7e97eef5e04",
+        "prefetch": 0,
+        "reconnectOnError": true,
+        "noAck": true,
+        "exchangeName": "doclin_cloud",
+        "exchangeType": "fanout",
+        "exchangeRoutingKey": "",
+        "exchangeDurable": true,
+        "queueName": "ibmcloud",
+        "queueType": "classic",
+        "queueExclusive": false,
+        "queueDurable": true,
+        "queueAutoDelete": false,
+        "headers": "{}",
+        "x": 150,
+        "y": 180,
+        "wires": [
+            [
+                "2997179fdf990881",
+                "dde8888526604c6a"
+            ]
+        ]
+    },
+    {
+        "id": "2997179fdf990881",
+        "type": "function",
+        "z": "2a179bf5f0025264",
+        "name": "PrepareImageData",
+        "func": "let img_filename=msg.properties.headers.file_name;\nlet img_filecorrelation_id = msg.properties.headers.file_correlation_id;\nlet img_content = Buffer.from(msg.payload, \"base64\");\nlet msgo={};\nmsgo.path = \"/usr/src/node-red/ibmcloud\";\nmsgo.filename = msgo.path+\"/\"+img_filename;\nmsgo.payload=img_content;\nmsgo.bucketName=\"cloud-object-storage-cos-standard-mrh\";\nmsgo.itemName=img_filename;\nmsgo.properties=msg.properties;\nreturn msgo;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 370,
+        "y": 180,
+        "wires": [
+            [
+                "6e7e103150b9dd01",
+                "1eb8ec017d65381a"
+            ]
+        ]
+    },
+    {
+        "id": "dde8888526604c6a",
+        "type": "debug",
+        "z": "2a179bf5f0025264",
+        "name": "IBMCLOUD-Q",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 200,
+        "y": 120,
+        "wires": []
+    },
+    {
+        "id": "6e7e103150b9dd01",
+        "type": "debug",
+        "z": "2a179bf5f0025264",
+        "name": "FileWrite",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 400,
+        "y": 120,
+        "wires": []
+    },
+    {
+        "id": "57c256b6c6a97739",
+        "type": "amqp-in",
+        "z": "2a179bf5f0025264",
+        "name": "AZ-CLOUD",
+        "broker": "bfb1e7e97eef5e04",
+        "prefetch": 0,
+        "reconnectOnError": true,
+        "noAck": true,
+        "exchangeName": "doclin_cloud",
+        "exchangeType": "fanout",
+        "exchangeRoutingKey": "",
+        "exchangeDurable": true,
+        "queueName": "azcloud",
+        "queueType": "classic",
+        "queueExclusive": false,
+        "queueDurable": true,
+        "queueAutoDelete": false,
+        "headers": "{}",
+        "x": 150,
+        "y": 400,
+        "wires": [
+            [
+                "f5451873110c4c46"
+            ]
+        ]
+    },
+    {
+        "id": "f5451873110c4c46",
+        "type": "function",
+        "z": "2a179bf5f0025264",
+        "name": "PrepareAzData",
+        "func": "let img_filename=msg.properties.headers.file_name;\nlet img_filecorrelation_id = msg.properties.headers.file_correlation_id;\nlet img_content = Buffer.from(msg.payload, \"base64\");\nlet msgo={};\nmsgo.path = \"/usr/src/node-red/azcloud\";\nmsgo.filename = msgo.path+\"/\"+img_filename;\nmsgo.payload=img_content;\nmsgo.containerName=\"images\";\nmsgo.blobName=img_filename;\nmsgo.properties=msg.properties;\nreturn msgo;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 360,
+        "y": 400,
+        "wires": [
+            [
+                "e4e8afbf555de0a4"
+            ]
+        ]
+    },
+    {
+        "id": "e4e8afbf555de0a4",
+        "type": "shazbstorage-upload",
+        "z": "2a179bf5f0025264",
+        "name": "azBlobStorage",
+        "configname": "2153944ff15a84ed",
+        "containerName": "",
+        "blobName": "",
+        "x": 600,
+        "y": 400,
+        "wires": [
+            [
+                "3b02a9cfd1bac34f",
+                "0fdee2e1aafc04ca"
+            ]
+        ]
+    },
+    {
+        "id": "3b02a9cfd1bac34f",
+        "type": "debug",
+        "z": "2a179bf5f0025264",
+        "name": "AZ-UPLOAD_RESULT",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 600,
+        "y": 360,
+        "wires": []
+    },
+    {
+        "id": "1eb8ec017d65381a",
+        "type": "shibmcos",
+        "z": "2a179bf5f0025264",
+        "name": "ibmCloudStorage",
+        "configname": "6a174355f1671148",
+        "x": 630,
+        "y": 180,
+        "wires": [
+            [
+                "4233dde2887a0a95",
+                "018ddb7bdcb21ef5"
+            ]
+        ]
+    },
+    {
+        "id": "4233dde2887a0a95",
+        "type": "debug",
+        "z": "2a179bf5f0025264",
+        "name": "IBM-UPLOAD-RESULT",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 650,
+        "y": 140,
+        "wires": []
+    },
+    {
+        "id": "0fdee2e1aafc04ca",
+        "type": "function",
+        "z": "2a179bf5f0025264",
+        "name": "PrepareAzureReplay",
+        "func": "let msgo={};\nmsgo.payload={};\nmsgo.payload.blobName=msg.payload.blobName;\nmsgo.payload.containerName=msg.containerName;\nmsgo.properties={};\nmsgo.properties.headers=msg.properties.headers\nreturn msgo;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 840,
+        "y": 400,
+        "wires": [
+            [
+                "e726bd2638e840f5",
+                "eaa05737a5ade6d4"
+            ]
+        ]
+    },
+    {
+        "id": "eaa05737a5ade6d4",
+        "type": "amqp-out",
+        "z": "2a179bf5f0025264",
+        "name": "",
+        "broker": "bfb1e7e97eef5e04",
+        "reconnectOnError": false,
+        "exchangeName": "doclin_repl",
+        "exchangeType": "direct",
+        "exchangeRoutingKey": "azblobstorage",
+        "exchangeRoutingKeyType": "str",
+        "exchangeDurable": true,
+        "amqpProperties": "{ \"headers\": {} }",
+        "rpcTimeoutMilliseconds": 3000,
+        "outputs": 0,
+        "x": 1110,
+        "y": 400,
+        "wires": []
+    },
+    {
+        "id": "e726bd2638e840f5",
+        "type": "debug",
+        "z": "2a179bf5f0025264",
+        "name": "AZ-REPLAY",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 890,
+        "y": 360,
+        "wires": []
+    },
+    {
+        "id": "41da645961ca2028",
+        "type": "amqp-out",
+        "z": "2a179bf5f0025264",
+        "name": "",
+        "broker": "bfb1e7e97eef5e04",
+        "reconnectOnError": false,
+        "exchangeName": "doclin_repl",
+        "exchangeType": "direct",
+        "exchangeRoutingKey": "ibmblobstorage",
+        "exchangeRoutingKeyType": "str",
+        "exchangeDurable": true,
+        "amqpProperties": "{ \"headers\": {} }",
+        "rpcTimeoutMilliseconds": 3000,
+        "outputs": 0,
+        "x": 1160,
+        "y": 180,
+        "wires": []
+    },
+    {
+        "id": "018ddb7bdcb21ef5",
+        "type": "function",
+        "z": "2a179bf5f0025264",
+        "name": "PrepareIbmReplay",
+        "func": "let msgo={};\nmsgo.payload={};\nmsgo.payload.blobName=msg.itemName;\nmsgo.payload.containerName=msg.bucketName;\nmsgo.properties={};\nmsgo.properties.headers=msg.properties.headers\nreturn msgo;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 890,
+        "y": 180,
+        "wires": [
+            [
+                "46b70cf67de5e6a9",
+                "41da645961ca2028"
+            ]
+        ]
+    },
+    {
+        "id": "46b70cf67de5e6a9",
+        "type": "debug",
+        "z": "2a179bf5f0025264",
+        "name": "IBM-REPLAY",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 900,
+        "y": 140,
+        "wires": []
+    }
+]

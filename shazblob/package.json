@@ -1,0 +1,24 @@
+{
+  "name": "shazblob",
+  "version": "1.0.0",
+  "description": "az blob node",
+  "main": "shazblob.js",
+  "scripts": {
+    "test": "test"
+  },
+  "node-red": {
+    "nodes": {
+      "shazblob-config": "shazblob-config.js",
+      "shazblob-upload": "shazblob-upload.js"
+    }
+  },
+  "author": "pasha",
+  "license": "ISC",
+  "dependencies": {
+    "@azure/identity": "^4.7.0",
+    "@azure/storage-blob": "^12.26.0",
+    "dotenv": "^16.4.7",
+    "fs": "^0.0.1-security",
+    "uuid": "^11.1.0"
+  }
+}

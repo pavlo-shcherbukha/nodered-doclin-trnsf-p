@@ -1,0 +1,46 @@
+<script type="text/javascript">
+	RED.nodes.registerType('shazbstorage-config',{
+		category: 'config',
+		defaults: {
+            configname: {value:"", required:true},
+            azure_tenant_id: {value:"", required:true},
+            azure_client_id: {value:"", required:true},
+            azure_client_secret: {value:"", required:true},
+            azure_storage_account_name: {value:"", required:true},
+
+		},
+		label: function() {
+			return this.configname
+		}
+	})
+</script>
+<script type="text/x-red" data-template-name="shazbstorage-config">
+    <div class="form-row">
+        <label for="node-config-input-configname"><i class="fa fa-tag"></i>Config name</label>
+        <input type="text" id="node-config-input-configname" placeholder="Config name">
+    </div>
+
+
+    <div class="form-row">
+        <label for="node-config-input-azure_tenant_id"><i class="fa fa-tag"></i>tenant_id</label>
+        <input type="text" id="node-config-input-azure_tenant_id" placeholder="azure_tenant_id">
+    </div>
+    <div class="form-row">
+        <label for="node-config-input-azure_client_id"><i class="fa fa-tag"></i>client_id</label>
+        <input type="text" id="node-config-input-azure_client_id" placeholder="azure_client_id">
+    </div>
+    <div class="form-row">
+        <label for="node-config-input-azure_client_secret"><i class="fa fa-tag"></i>client_secret</label>
+        <input type="text" id="node-config-input-azure_client_secret" placeholder="azure_client_secret">
+    </div>
+
+    <div class="form-row">
+        <label for="node-config-input-azure_storage_account_name"><i class="fa fa-tag"></i>torage_account_name</label>
+        <input type="text" id="node-config-input-azure_storage_account_name" placeholder="azure_storage_account_name">
+    </div>
+
+
+   
+
+</script>
+
