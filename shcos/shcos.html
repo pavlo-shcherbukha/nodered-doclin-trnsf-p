@@ -1,0 +1,109 @@
+<script type="text/javascript">
+	RED.nodes.registerType('shibmcos-config',{
+		category: 'config',
+		defaults: {
+            configname: {value:"", required:true},
+            endpoint: {value:"",required:true},            
+			apikeyid: {value:"",required:true},
+			serviceInstanceId: {value:"",required:true},
+            signatureVersion : {value:"iam",required:true},
+		},
+		label: function() {
+			return this.configname
+		},
+        
+		oneditprepare: function() {
+            console.log("==:::::::::::::=============" );
+            $("#node-config-input-logto").change(function() {
+      			if ($(this).val() === "file") {
+                    $("#node-config-fileprop").show()
+                    console.log("======SHOW-SHOW-SHOW-SHOW-SHOW-SHOW-============");
+      			} else {
+                    console.log("======HIDE-HIDE-HIDE-HIDE-HIDE-HIDE-HIDE--============");
+                    $("#node-config-fileprop").hide()  
+                }
+
+		    })
+		},
+
+        /*
+		oneditsave: function() {
+			if ($("#node-config-input-logrotate").is(':checked')) {
+				if ($("#node-config-input-logrotatecount").val() < 1) $("#node-config-input-logrotatecount").val(5)
+				if ($("#node-config-input-logsize").val() < 1) $("#node-config-input-logsize").val(1000)
+			}
+		}*/
+
+
+		
+
+	})
+</script>
+<script type="text/x-red" data-template-name="shibmcos-config">
+    <div class="form-row">
+        <label for="node-config-input-configname"><i class="fa fa-tag"></i>Config name</label>
+        <input type="text" id="node-config-input-configname" placeholder="Config name">
+    </div>
+
+    <div id="node-config-cosprops">
+        <div id="node-config-input_endpoint" class="form-row">
+            <label for="node-config-input-endpoint"><i class="fa fa-tag"></i>COS Endpoint name</label>
+            <input type="text" id="node-config-input-endpoint" placeholder="cos endpoint name">
+        </div>
+        <div id="node-config-input-apikeyid-d" class="form-row">
+            <label for="node-config-input-apikeyid"><i class="fa fa-tag"></i>COS apikeyid</label>
+            <input type="text" id="node-config-input-apikeyid" placeholder="apikeyid">
+        </div>
+        <div id="node-config-input-cos-serviceInstanceId" class="form-row">
+            <label for="node-config-input-serviceInstanceId"><i class="fa fa-tag"></i>COS serviceInstanceId</label>
+            <input type="text" id="node-config-input-serviceInstanceId" placeholder="serviceInstanceId">
+        </div>
+
+        <div id="node-config-input-cos-signatureVersion" class="form-row">
+            <label for="node-config-input-signatureVersion"><i class="fa fa-tag"></i>COS signatureVersion</label>
+            <input type="text" id="node-config-input-signatureVersion" placeholder="signatureVersion">
+        </div>
+
+
+    </div>    
+
+</script>
+
+
+
+<script type="text/javascript">
+    RED.nodes.registerType('shibmcos',{
+        category: 'shIbmCOS',
+        color: '#FFAAAA',
+        icon: "file.png",
+        defaults: {
+            name: {value:""},
+            configname: {type:"shibmcos-config"},
+        },
+        inputs:1,
+        outputs:1,
+        label: function() {
+            return this.name||"shibmcos";
+        }
+    });
+</script>
+
+<script type="text/html" data-template-name="shibmcos">
+    <div class="form-row">
+        <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
+        <input type="text" id="node-input-name" placeholder="Name">
+    </div>
+
+    <div class="form-row">
+		<label for="node-input-configname"><i class="fa fa-cogs"></i> Log Config</label>
+		<input type="text" id="node-input-configname" placeholder="COS Configuration">
+	</div>
+
+   
+</script>
+
+<script type="text/html" data-help-name="shibmcos">
+    <p>A simple node that converts the message payloads into all tratata  characters</p>
+</script>
+
+

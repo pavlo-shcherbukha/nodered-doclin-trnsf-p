@@ -1,0 +1,16 @@
+{
+    "name": "node-red-project",
+    "description": "A Node-RED Project",
+    "version": "0.0.1",
+    "private": true,
+    "scripts": {
+        "dev": "node  node_modules/node-red/red.js --settings ./settings.js --userDir .  --port 1882 --verbose uploader.json"
+    },
+    "dependencies": {
+        "@mnn-o/node-red-rabbitmq": "~1.0.2",
+        "node-red": "^4.0.9",
+        "node-red-contrib-cloudantplus": "~2.0.6",
+        "shazblob": "file:shazblob",
+        "shibmcos": "file:shcos"
+    }
+}

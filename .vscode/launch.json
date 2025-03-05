@@ -1,0 +1,38 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python: worker.py",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/doclin_weber.py",
+            "env": {
+                "RABBITMQ_USER": "guest",
+                "RABBITMQ_PASSWORD": "guest",
+                "RABBITMQ_HOST": "localhost",
+                "RABBITMQ_PORT": "5672",
+                "COUCHDB_AUTH_TYPE":"COUCHDB_SESSION",
+                "COUCHDB_URL":"http://localhost:5984",
+                "COUCHDB_USERNAME":"devadm",
+                "COUCHDB_PASSWORD":"qq",
+                "OMP_NUM_THREADS": "2"
+            },
+            "args": [
+                "test"
+            ]
+        },
+        {
+            "name": "Python: wdoclingtest.py",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/wdoclingtest.py",
+            "env": {
+                "test": "test"
+            },
+            "args": [
+                "test"
+            ]
+
+        }
+    ]
+}
