@@ -159,7 +159,13 @@ def main():
                 isdocument=couchd.isMarkDownExists(msgo.get("document_id"))
                 if isdocument["ok"]:
                     logger.debug(f"Документ {msgo.get('document_id')} вже оброблений")
-                    logger.debug("Установка delivery_tag)")    
+                   
+                   
+                    doc_orig=couchd.readDocument(msgo.get('document_id'))
+                    mdname=mdfilename(doc_orig["name"])
+                    logger.debug(f"Документ {doc_orig['name']} mardown {mdname} оброблений")
+
+                    logger.debug("Установка delivery_tag)")     
                     ch.basic_ack(delivery_tag=method.delivery_tag)
                     ch.basic_publish(   exchange='doclin_repl', 
                                         routing_key='converter', 
@@ -199,11 +205,15 @@ def main():
                             element_image_filename = mdname + f"-picture-{picture_counter}.png"
                             logger.debug("Processing image", element_image_filename)
                             pilimage = element.get_image(doclingdoc)
-                            b=pil_image_to_byte_array(pilimage)
-                            imagemeta={"filename": element_image_filename, "filedsc": "Picture", "correlation_id":  msgo.get('document_id'), "contenttype": "iamge/png"}
-                            logger.debug(f"save image to db: {element_image_filename}")
-                            imgdoc=couchd.saveImage( b, imagemeta)
-                            logger.debug(f"save image to db - result: {json.dumps(imgdoc)}")
+                            if pilimage is None:
+                                logger.debug("Image not found")
+                                continue
+                            else:    
+                                b=pil_image_to_byte_array(pilimage)
+                                imagemeta={"filename": element_image_filename, "filedsc": "Picture", "correlation_id":  msgo.get('document_id'), "contenttype": "iamge/png"}
+                                logger.debug(f"save image to db: {element_image_filename}")
+                                imgdoc=couchd.saveImage( b, imagemeta)
+                                logger.debug(f"save image to db - result: {json.dumps(imgdoc)}")
 
                     logger.debug("Processing document images and tables-OK")
                     logger.debug("Установка delivery_tag)")    
